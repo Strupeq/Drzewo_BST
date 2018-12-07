@@ -155,6 +155,34 @@ namespace Drzewo_BST
             }
             return false;
         }
+
+        static public int ile_liczb(int _liczba_L, W _korzen)
+        {
+            int ilosc = 0;
+            while (_korzen != null)
+            {
+                if (_korzen.liczba_L == _liczba_L)
+                {
+                    ilosc++;
+                    ilosc += ile_liczb(_liczba_L, _korzen.L);
+                    ilosc += ile_liczb(_liczba_L, _korzen.P);
+
+                    break;
+                }
+
+                else if (_korzen.liczba_L > _liczba_L)
+                {
+                    _korzen = _korzen.L;
+                }
+
+                else if (_korzen.liczba_L < _liczba_L)
+                {
+                    _korzen = _korzen.P;
+                }
+            }
+            return ilosc;
+        }
+
         static public void usun(int _liczba_L, int _liczba_P, W _korzen)
         {
             while (_korzen != null)
@@ -277,6 +305,7 @@ namespace Drzewo_BST
             BST.usun(14, 0, korzen);
             // BST.usun(9, 50, korzen);
             BST.wypisz(korzen, 0);
+            System.Console.Write(BST.ile_liczb(13, korzen));
             System.Console.ReadLine();
         }
     }
