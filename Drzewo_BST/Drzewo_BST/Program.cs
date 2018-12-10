@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace Drzewo_BST
 {
@@ -54,9 +55,11 @@ namespace Drzewo_BST
             W nowy = new W();
             nowy.liczba_L = _liczba_L;
             nowy.liczba_P = _liczba_P;
+            W rodzic = new W();
 
             while (_korzen != null)
             {
+                nowy.R = _korzen;
                 if (_korzen.liczba_L == _liczba_L && _korzen.liczba_P == _liczba_P)
                 {
                     break;
@@ -67,10 +70,10 @@ namespace Drzewo_BST
                     if (_korzen.L == null)
                     {
                         _korzen.L = nowy;
+                        break;
                     }
                     else
                     {
-                        nowy.R = _korzen;
                         _korzen = _korzen.L;
                     }
                 }
@@ -80,10 +83,10 @@ namespace Drzewo_BST
                     if (_korzen.P == null)
                     {
                         _korzen.P = nowy;
+                        break;
                     }
                     else
                     {
-                        nowy.R = _korzen;
                         _korzen = _korzen.P;
                     }
                 }
@@ -93,10 +96,10 @@ namespace Drzewo_BST
                     if (_korzen.L == null)
                     {
                         _korzen.L = nowy;
+                        break;
                     }
                     else
                     {
-                        nowy.R = _korzen;
                         _korzen = _korzen.L;
                     }
                 }
@@ -106,31 +109,23 @@ namespace Drzewo_BST
                     if (_korzen.P == null)
                     {
                         _korzen.P = nowy;
+                        break;
                     }
                     else
                     {
-                        nowy.R = _korzen;
                         _korzen = _korzen.P;
                     }
                 }
             }
-            /*
-            if (_korzen == null)
-            {
-                _korzen = new W();
-                _korzen.liczba_L = _liczba_L;
-                _korzen.liczba_P = _liczba_P;
-            }
-            */
         }
 
-        static public bool szukaj(int _liczba_L, int _liczba_P, W _korzen)
+        static public string szukaj(int _liczba_L, int _liczba_P, W _korzen)
         {
             while (_korzen != null)
             {
                 if (_korzen.liczba_L == _liczba_L && _korzen.liczba_P == _liczba_P)
                 {
-                    return true;
+                    return "TAK";
                 }
 
                 else if (_korzen.liczba_L == _liczba_L && _korzen.liczba_P > _liczba_P)
@@ -153,7 +148,7 @@ namespace Drzewo_BST
                     _korzen = _korzen.P;
                 }
             }
-            return false;
+            return "NIE";
         }
 
         static public int ile_liczb(int _liczba_L, W _korzen)
@@ -189,77 +184,120 @@ namespace Drzewo_BST
             {
                 if (_korzen.liczba_L == _liczba_L && _korzen.liczba_P == _liczba_P)     // PODANA LICZBA JEST RÓWNA OBECNEJ PRZEGLĄDANEJ
                 {
-                    W rodzic = _korzen.R;                           // POBRANIE RODZICA
-
-                    if (_korzen.L == null && _korzen.P == null)     // OBAJ SYNOWIE SĄ NULLAMI
-                    {
-
-                        if (rodzic.L == _korzen)
+                    W rodzic = _korzen.R;                                   // POBRANIE RODZICA
+                    //if (rodzic != null)
+                    //{
+                        if (_korzen.L == null && _korzen.P == null)         // OBAJ SYNOWIE SĄ NULLAMI
                         {
-                            rodzic.L = null;
+                            if (rodzic.L == _korzen)
+                            {
+                                rodzic.L = null;
+                            }
+                            else
+                            {
+                                rodzic.P = null;
+                            }
+                            break;
+                        }
+
+                        else if (_korzen.L != null && _korzen.P == null)    // TYLKO PRAWY SYN NIE JEST NULLEM
+                        {
+
+                            if (rodzic.L == _korzen)
+                            {
+                                rodzic.L = _korzen.L;
+                            }
+                            else
+                            {
+                                rodzic.P = _korzen.L;
+                            }
+                            _korzen = _korzen.L;
+                            _korzen.R = rodzic;
+                            break;
+                        }
+
+                        else if (_korzen.L == null && _korzen.P != null)    // TYLKO LEWY SYN NIE JEST NULLEM
+                        {
+                            if (rodzic.L == _korzen)
+                            {
+                                rodzic.L = _korzen.P;
+                            }
+                            else
+                            {
+                                rodzic.P = _korzen.P;
+                            }
+                            _korzen = _korzen.P;
+                            _korzen.R = rodzic;
+                            break;
+                        }
+
+                        else                                           // OBAJ SYNOWIE NIE SĄ NULLAMI
+                        {
+                            //---- WYCIĄGANIE NASTĘPNIKA ----//
+
+                            W nastepnik = _korzen.P;
+                            W tmp = _korzen.L;
+                            W tmp2 = _korzen.P;
+                            
+                            while (nastepnik.L != null)                // SZUKANIE NASTĘPNIKA
+                            {
+                                nastepnik = nastepnik.L;
+                            }
+                            
+                            if(nastepnik != _korzen.P)              // PRZYPADEK GDY NASTEPNIK TO PRAWY SYN USUWANEGO ELEMENTU
+                            {
+                                usun(nastepnik.liczba_L, nastepnik.liczba_P, _korzen);      // USUWANIE NASTEPNIKA                                                                                            // PRZYPISANIE NOWYCH SYNÓW DO NASTĘPNIKA
+                                nastepnik.P = _korzen.P;
+                                tmp2.R = nastepnik;
+                            }
+
+                                nastepnik.L = _korzen.L;                          
+                           
+                            //---- WSTAWIANIE NASTĘPNIKA ZAMIAST USUWANEGO ELEMENTU ----//
+
+                            if (rodzic.L == _korzen)                   // JEŚLI USUWANY ELEMENT JEST LEWYM SYNEM
+                            {
+                                rodzic.L = nastepnik;                  // ZASTAPIENIE USUNIETEGO ELEMENTU (JEŚLI BYŁ PO LEWEJ STRONIE)                                
+                            }
+
+                            else                                       // JEŚLI USUWANY ELEMENT JEST PRAWYM SYNEM
+                            {
+                                rodzic.P = nastepnik;                  // ZASTAPIENIE USUNIETEGO ELEMENTU (JEŚLI BYŁ PO PRAWEJ STRONIE)
+                            }
+
+                            nastepnik.R = rodzic;                      // PRZYPISANIE RODZICA NASTEPNIKOWI
+                            tmp.R = nastepnik;                         // USTAWIENIE RODZICA DLA LEWEGO SYNA NASTEPNIKA
+                        }
+                    //}
+
+                  /* else
+                   {           
+                        W tmp = _korzen;
+                       
+                        if(tmp.P != null && tmp.L == null)
+                        {
+                            _korzen = _korzen.P;
+                            tmp.liczba_L = _korzen.liczba_L;
+                            tmp.liczba_P = _korzen.liczba_P;
+                            tmp.P = _korzen.P;
+                            tmp.L = _korzen.L;
+                        }
+                        else if(tmp.L != null && tmp.P == null)
+                        {
+                            _korzen = _korzen.L;
+                            tmp.liczba_L = _korzen.liczba_L;
+                            tmp.liczba_P = _korzen.liczba_P;
+                            tmp.P = _korzen.P;
+                            tmp.L = _korzen.L;
                         }
                         else
                         {
-                            rodzic.P = null;
-                        }
-                    }
+                            tmp.liczba_L = 0;
+                            tmp.liczba_P = 0;
+                        }    
+                        
+                    }*/
 
-                    else if (_korzen.L != null && _korzen.P == null)    // TYLKO PRAWY SYN NIE JEST NULLEM
-                    {
-
-                        if (rodzic.L == _korzen)
-                        {
-                            rodzic.L = _korzen.L;
-                        }
-                        else
-                        {
-                            rodzic.P = _korzen.L;
-                        }
-                    }
-
-                    else if (_korzen.L == null && _korzen.P != null)    // TYLKO LEWY SYN NIE JEST NULLEM
-                    {
-
-                        if (rodzic.L == _korzen)
-                        {
-                            rodzic.L = _korzen.P;
-                        }
-                        else
-                        {
-                            rodzic.P = _korzen.P;
-                        }
-                    }
-
-                    else                                           // OBAJ SYNOWIE NIE SĄ NULLAMI
-                    {
-
-                        //---- WYCIĄGANIE NASTĘPNIKA ----//
-
-                        W nastepnik = _korzen.P;
-
-                        while (nastepnik.L != null)                // SZUKANIE NASTĘPNIKA
-                        {
-                            nastepnik = nastepnik.L;
-                        }
-
-                        usun(nastepnik.liczba_L, nastepnik.liczba_P, _korzen);      // USUWANIE NASTEPNIKA
-
-                        //---- WSTAWIANIE NASTĘPNIKA ZAMIAST USUWANEGO ELEMENTU ----//
-
-                        nastepnik.L = _korzen.L;                   // PRZYPISANIE NOWYCH SYNÓW DO NASTĘPNIKA
-                        nastepnik.P = _korzen.P;
-
-                        if (rodzic.L == _korzen)                   // JEŚLI USUWANY ELEMENT JEST LEWYM SYNEM
-                        {
-                            rodzic.L = nastepnik;                  // ZASTAPIENIE USUNIETEGO ELEMENTU (JEŚLI BYŁ PO LEWEJ STRONIE)
-                        }
-
-                        else                                       // JEŚLI USUWANY ELEMENT JEST PRAWYM SYNEM
-                        {
-                            rodzic.P = nastepnik;                  // ZASTAPIENIE USUNIETEGO ELEMENTU (JEŚLI BYŁ PO PRAWEJ STRONIE)
-                        }
-
-                    }
                     break;
                 }
 
@@ -290,23 +328,86 @@ namespace Drzewo_BST
     {
         static void Main(string[] args)
         {
-            W korzen = new W();
-            korzen.liczba_L = 10;
-            korzen.liczba_P = 50;
+            using (StreamWriter streamW = new StreamWriter("out.txt"))        // CZYSZCZENIE PLIKU OUT.TXT
+            {
+                streamW.Write(string.Empty);
+            }
 
-            BST.dodaj(9, 50, korzen);
-            BST.dodaj(11, 50, korzen);
-            BST.dodaj(10, 0, korzen);
-            BST.dodaj(11, 0, korzen);
-            BST.dodaj(9, 0, korzen);
-            BST.dodaj(14, 0, korzen);
-            BST.dodaj(15, 0, korzen);
-            BST.dodaj(13, 0, korzen);
-            BST.usun(14, 0, korzen);
+            W korzen = new W();
+            string[] file = System.IO.File.ReadAllLines("duzy1.txt");      // POBRANIE LINIJEK Z PLIKU DO TABLICY STRING
+            string[] tab_pom;
+            int n;
+            int x, y;
+
+            tab_pom = file[0].Split(' ');
+            n = int.Parse(tab_pom[0]);      // WYODRĘBNIENIE LICZBY POLECEŃ
+            string c;
+
+            for (int i = 1; i <= n; i++)
+            {
+                tab_pom = file[i].Split(' ');
+                c = tab_pom[0];
+
+                switch (c)
+                {
+
+                    case "W":
+
+                        tab_pom = tab_pom[1].Split(',');
+                        x = int.Parse(tab_pom[0]);
+                        y = int.Parse(tab_pom[1]);
+
+                        if (korzen.liczba_L == 0 && korzen.liczba_P == 0)
+                        {
+                            korzen.liczba_L = x;
+                            korzen.liczba_P = y;
+                        }
+                        else
+                        {
+                            BST.dodaj(x, y, korzen);
+                        }
+
+                        break;
+
+                    case "U":
+
+                        tab_pom = tab_pom[1].Split(',');
+                        x = int.Parse(tab_pom[0]);
+                        y = int.Parse(tab_pom[1]);
+                        BST.usun(x, y, korzen);
+                        
+                        break;
+
+                    case "S":
+                        
+                        tab_pom = tab_pom[1].Split(',');
+                        x = int.Parse(tab_pom[0]);
+                        y = int.Parse(tab_pom[1]);
+                        BST.szukaj(x, y, korzen);
+                        using (StreamWriter streamW = new StreamWriter("out.txt", true))        
+                        {
+                            streamW.WriteLine(BST.szukaj(x, y, korzen));
+                        }
+                        break;
+
+                    case "L":
+                        
+                        x = int.Parse(tab_pom[1]);
+                        using (StreamWriter streamW = new StreamWriter("out.txt", true))
+                        {
+                            streamW.WriteLine(BST.ile_liczb(x, korzen));
+                        }
+                        
+                        break;
+                }
+            }
+            
             // BST.usun(9, 50, korzen);
             BST.wypisz(korzen, 0);
-            System.Console.Write(BST.ile_liczb(13, korzen));
+            //System.Console.Write(BST.ile_liczb(13, korzen));
+            
             System.Console.ReadLine();
+         
         }
     }
 }
